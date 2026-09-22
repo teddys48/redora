@@ -37,18 +37,43 @@ SQLite         Redis Connections
 
 ## ⚙️ Environment Variables
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `PORT` | Web server listening port | `8080` |
-| `DB_PATH` | Path to SQLite database file | `/data/redora.db` |
-| `ENCRYPTION_KEY` | Secret key used for credential encryption | `default-32-byte-secret-key-change-me!!` |
-| `LOG_LEVEL` | Logging level (`debug`, `info`, `warn`, `error`) | `info` |
+| Variable         | Description                                      | Default                                  |
+| :--------------- | :----------------------------------------------- | :--------------------------------------- |
+| `PORT`           | Web server listening port                        | `8080`                                   |
+| `DB_PATH`        | Path to SQLite database file                     | `/data/redora.db`                        |
+| `ENCRYPTION_KEY` | Secret key used for credential encryption        | `default-32-byte-secret-key-change-me!!` |
+| `LOG_LEVEL`      | Logging level (`debug`, `info`, `warn`, `error`) | `info`                                   |
 
 ---
 
 ## 🐳 Deployment
 
 ### Using Docker Compose
+
+`docker-compose.yml`:
+
+```yaml
+services:
+  redora:
+    image: ghcr.io/teddys48/redora:latest
+    container_name: redora
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DB_PATH=/data/redora.db
+      - ENCRYPTION_KEY=super-secret-production-encryption-key-32bytes
+      - LOG_LEVEL=info
+    volumes:
+      - redora-data:/data
+    restart: unless-stopped
+
+volumes:
+  redora-data:
+    driver: local
+```
+
+Run container:
 
 ```bash
 docker compose up -d
@@ -67,8 +92,8 @@ docker run -d \
   --name redora \
   -p 8080:8080 \
   -v redora-data:/data \
-  -e ENCRYPTION_KEY="your-secret-32-byte-key-here" \
-  redora:latest
+  -e ENCRYPTION_KEY="super-secret-production-encryption-key-32bytes" \
+  ghcr.io/teddys48/redora:latest
 ```
 
 ---

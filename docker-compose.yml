@@ -1,10 +1,6 @@
-version: "3.8"
-
 services:
   redora:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/teddys48/redora:latest
     container_name: redora
     ports:
       - "8080:8080"
