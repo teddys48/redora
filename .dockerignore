@@ -1,0 +1,31 @@
+# Git & Repository metadata
+.git
+.gitignore
+README.md
+
+# Local build binaries & binaries
+redora-server
+redora
+
+# Storage & SQLite database files
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+test_redora.db
+
+# Dependencies & compiled outputs
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Docker configuration files
+Dockerfile
+docker-compose.yml
+podman-compose.yml
+.dockerignore
+
+# Temporary & Log files
+*.log
+.DS_Store
