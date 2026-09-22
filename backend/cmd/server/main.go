@@ -61,6 +61,7 @@ func main() {
 
 	connRepo := repository.NewConnectionRepository(db)
 	connSvc := service.NewConnectionService(connRepo, encryptor, redisMgr)
+	redisSvc := service.NewRedisService(connRepo, encryptor, redisMgr)
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
@@ -93,6 +94,18 @@ func main() {
 	// Connection Handler
 	connHandler := handler.NewConnectionHandler(connSvc)
 	connHandler.RegisterRoutes(api)
+
+	// Key & Value CRUD Handler
+	keyHandler := handler.NewKeyHandler(redisSvc)
+	keyHandler.RegisterRoutes(api)
+
+	// Command Handler
+	commandHandler := handler.NewCommandHandler(redisSvc)
+	commandHandler.RegisterRoutes(api)
+
+	// PubSub Handler
+	pubsubHandler := handler.NewPubSubHandler(redisSvc)
+	pubsubHandler.RegisterRoutes(api)
 
 	// Serve Frontend (Embedded assets or fallback)
 	distFS, err := fs.Sub(webFS, "dist")
