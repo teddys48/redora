@@ -154,22 +154,27 @@
     formSubmitting = true;
     formTestStatus = null;
 
-    const payload: ConnectionCreateInput = {
+    const payload: Record<string, any> = {
       name: formName.trim(),
       host: formHost.trim(),
       port: formPort || 6379,
       username: formUsername.trim(),
-      password: formPassword,
       db: formDB || 0,
       tlsEnabled: formTLS,
     };
+
+    if (formPassword !== '') {
+      payload.password = formPassword;
+    } else if (!editingId) {
+      payload.password = '';
+    }
 
     try {
       if (editingId) {
         await apiClient.updateConnection(editingId, payload);
         showToast('success', `Connection "${payload.name}" updated successfully`);
       } else {
-        const newConn = await apiClient.createConnection(payload);
+        const newConn = await apiClient.createConnection(payload as ConnectionCreateInput);
         activeConnId = newConn.id;
         showToast('success', `Connection "${payload.name}" added successfully`);
       }
@@ -195,6 +200,7 @@
     formTestStatus = null;
 
     const payload: ConnectionCreateInput = {
+      id: editingId || undefined,
       name: formName || 'Test Connection',
       host: formHost.trim(),
       port: formPort || 6379,

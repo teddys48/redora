@@ -97,7 +97,7 @@ func (s *connectionService) Update(ctx context.Context, id string, input *models
 	if input.Username != nil {
 		existing.Username = *input.Username
 	}
-	if input.Password != nil {
+	if input.Password != nil && *input.Password != "" {
 		enc, err := s.encryptor.Encrypt(*input.Password)
 		if err != nil {
 			return nil, fmt.Errorf("failed to encrypt updated password: %w", err)
@@ -146,6 +146,15 @@ func (s *connectionService) TestInput(ctx context.Context, input *models.Connect
 		port = 6379
 	}
 
+	rawPass := input.Password
+	if rawPass == "" && input.ID != "" {
+		if conn, err := s.repo.GetByID(ctx, input.ID); err == nil && conn != nil {
+			if decrypted, err := s.encryptor.Decrypt(conn.PasswordEncrypted); err == nil {
+				rawPass = decrypted
+			}
+		}
+	}
+
 	dummyConn := &models.Connection{
 		ID:         "test",
 		Host:       input.Host,
@@ -155,5 +164,5 @@ func (s *connectionService) TestInput(ctx context.Context, input *models.Connect
 		TLSEnabled: input.TLSEnabled,
 	}
 
-	return s.redisMgr.TestConnection(ctx, dummyConn, input.Password)
+	return s.redisMgr.TestConnection(ctx, dummyConn, rawPass)
 }

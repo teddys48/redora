@@ -100,7 +100,35 @@ func TestConnectionCRUD(t *testing.T) {
 		t.Fatalf("Expected 1 connection, got %d", len(getRes["data"]))
 	}
 
-	// 3. Delete Connection
+	// 3. Update Connection without password (verify password preservation)
+	updatePayload := models.ConnectionUpdateInput{
+		Name: "Updated Redis Name",
+		Host: "127.0.0.1",
+		Port: 6379,
+		DB:   1,
+	}
+	upBytes, _ := json.Marshal(updatePayload)
+	reqUp := httptest.NewRequest(http.MethodPut, "/api/connections/"+createdConn.ID, bytes.NewReader(upBytes))
+	reqUp.Header.Set("Content-Type", "application/json")
+	respUp, err := app.Test(reqUp, -1)
+	if err != nil {
+		t.Fatalf("Failed to execute PUT /api/connections: %v", err)
+	}
+	if respUp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status 200 OK, got %d", respUp.StatusCode)
+	}
+
+	// Verify database password is still intact and decodable
+	storedConn, err := connRepo.GetByID(reqUp.Context(), createdConn.ID)
+	if err != nil || storedConn == nil {
+		t.Fatalf("Failed to retrieve stored connection: %v", err)
+	}
+	decryptedPass, err := encryptor.Decrypt(storedConn.PasswordEncrypted)
+	if err != nil || decryptedPass != "MySecretPassword" {
+		t.Fatalf("Expected password to remain 'MySecretPassword', got '%s' (err: %v)", decryptedPass, err)
+	}
+
+	// 4. Delete Connection
 	reqDel := httptest.NewRequest(http.MethodDelete, "/api/connections/"+createdConn.ID, nil)
 	respDel, err := app.Test(reqDel, -1)
 	if err != nil {

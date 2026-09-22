@@ -16,6 +16,7 @@ type Connection struct {
 }
 
 type ConnectionCreateInput struct {
+	ID         string `json:"id,omitempty"`
 	Name       string `json:"name"`
 	Host       string `json:"host"`
 	Port       int    `json:"port"`
